@@ -31,11 +31,9 @@ jobs:
 
       - name: Write kubeconfig
         run: |
-          cat << 'EOF' > kubeconfig
-${KUBECONFIG}
-EOF
+          echo "${KUBECONFIG_CONTENT}" > kubeconfig
         env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
 
       - name: Deploy to k0s
         run: kubectl apply -f k8s/
