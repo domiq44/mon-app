@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -36,7 +36,7 @@ jobs:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
 
       - name: Deploy to k0s
-        run: kubectl apply -f k8s/
+        run: kubectl apply --validate=false -f k8s/
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
 
