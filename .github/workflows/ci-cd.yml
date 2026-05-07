@@ -29,8 +29,16 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
 
+      - name: Write kubeconfig
+        run: |
+          cat << 'EOF' > kubeconfig
+${KUBECONFIG}
+EOF
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
       - name: Deploy to k0s
         run: kubectl apply -f k8s/
         env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
 
