@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mon-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mon-app
+  template:
+    metadata:
+      labels:
+        app: mon-app
+    spec:
+      containers:
+        - name: mon-app
+          image: ghcr.io/TON_USER/mon-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+
