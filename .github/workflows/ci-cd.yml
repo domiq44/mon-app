@@ -47,3 +47,8 @@ jobs:
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
 
+      - name: Rollback on failure
+        if: failure()
+        run: kubectl rollout undo deployment/mon-app
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
