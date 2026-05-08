@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mon-app
+  namespace: staging
 spec:
   replicas: 1
   selector:
@@ -18,4 +19,3 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
-

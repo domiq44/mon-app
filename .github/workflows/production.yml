@@ -1,0 +1,44 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-production:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Write kubeconfig
+        run: echo "${KUBECONFIG_CONTENT}" > kubeconfig
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
+
+      - name: Apply production manifests
+        run: kubectl apply --validate=false -f k8s/production/
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+
+      - name: Update image with SHA
+        run: |
+          kubectl set image deployment/mon-app \
+            mon-app=ghcr.io/domiq44/mon-app:${{ github.sha }} \
+            -n production
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+
+      - name: Health check
+        run: kubectl rollout status deployment/mon-app -n production --timeout=60s
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+
+      - name: Rollback on failure
+        if: failure()
+        run: kubectl rollout undo deployment/mon-app -n production
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig

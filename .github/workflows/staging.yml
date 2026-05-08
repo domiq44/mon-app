@@ -1,11 +1,11 @@
-name: CI/CD
+name: CI - Staging
 
 on:
   push:
     branches: ["main"]
 
 jobs:
-  build-and-deploy:
+  build-and-deploy-staging:
     runs-on: self-hosted
 
     steps:
@@ -32,23 +32,22 @@ jobs:
         uses: azure/setup-kubectl@v4
 
       - name: Write kubeconfig
-        run: |
-          echo "${KUBECONFIG_CONTENT}" > kubeconfig
+        run: echo "${KUBECONFIG_CONTENT}" > kubeconfig
         env:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
 
-      - name: Deploy to k0s
-        run: kubectl apply --validate=false -f k8s/
+      - name: Deploy to staging
+        run: kubectl apply --validate=false -f k8s/staging/
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
 
-      - name: Health check - wait for rollout
-        run: kubectl rollout status deployment/mon-app --timeout=60s
+      - name: Health check
+        run: kubectl rollout status deployment/mon-app -n staging --timeout=60s
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
 
       - name: Rollback on failure
         if: failure()
-        run: kubectl rollout undo deployment/mon-app
+        run: kubectl rollout undo deployment/mon-app -n staging
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig

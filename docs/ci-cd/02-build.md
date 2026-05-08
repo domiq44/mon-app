@@ -1,28 +1,26 @@
-
 # 02 — Build de l’image Docker (sans push)
 
-## 🎯 Objectif
-Valider que le runner self‑hosted **feynman** est capable de :
-- construire l’image Docker définie dans le `Dockerfile`
-- utiliser Docker localement
-- exécuter l’étape de build sans tenter de pousser l’image
-
-Cette étape permet de vérifier que Docker fonctionne correctement sur le runner avant d’ajouter le push vers GHCR.
+## Objectif
+Tester la construction d’une image Docker sur un runner self‑hosted, sans la pousser vers un registre.
 
 ---
 
-## 🧱 Pré‑requis
-- Étape 01 (Checkout) validée
-- Docker installé sur le runner self‑hosted
-- Le runner doit appartenir au groupe permettant d’utiliser Docker (souvent `docker`)
+## Rappel : qu’est-ce qu’une image Docker ?
+
+Une image Docker est un modèle utilisé pour créer des conteneurs.
+Elle contient le code de l’application et tout ce qui est nécessaire pour l’exécuter.
 
 ---
 
-## 🧩 Workflow minimal pour cette étape
+## Pré‑requis
 
-Ce workflow effectue :
-1. Le checkout du dépôt
-2. Le build Docker **sans push**
+- Étape 01 validée
+- Docker installé sur le runner
+- L’utilisateur du runner doit pouvoir utiliser Docker
+
+---
+
+## Workflow minimal
 
 ```yaml
 name: CI/CD - Step 02 Build
@@ -49,55 +47,39 @@ jobs:
 
 ---
 
-## 🔍 Comment tester
+## Comment tester
 
-1. Faire un commit vide :
-   ```
-   git commit --allow-empty -m "test build"
-   git push
-   ```
-
-2. Aller dans **Actions**, ouvrir le run.
-
-3. Vérifier que l’étape **Build Docker image (no push)** s’exécute correctement.
+```
+git commit --allow-empty -m "test build"
+git push
+```
 
 ---
 
-## ✅ Comment valider que l’étape fonctionne
+## Validation
 
-Dans les logs de l’étape build, tu dois voir :
-- `#1 [internal] load build definition`
-- `#2 [internal] load .dockerignore`
-- `#3 [internal] load metadata for ...`
-- `#x exporting to image`
-- Aucun message d’erreur du type :
-  - `Cannot connect to the Docker daemon`
-  - `permission denied`
-  - `failed to solve`
+Dans les logs :
 
-Sur la machine du runner, tu peux vérifier que l’image a été construite :
+- load build definition
+- load metadata
+- exporting to image
+
+Sur le runner :
 
 ```
 docker images | grep mon-app
 ```
 
-Tu dois voir une ligne similaire à :
-```
-mon-app   test   <image-id>   <date>
-```
+---
+
+## Erreurs fréquentes
+
+- Cannot connect to the Docker daemon
+- permission denied
+- failed to solve
 
 ---
 
-## 📝 Notes importantes
-- Cette étape ne pousse rien vers GHCR.
-- Elle permet d’isoler les problèmes Docker avant d’ajouter la partie registry.
-- Si cette étape échoue, il faut vérifier :
-  - que Docker tourne (`systemctl status docker`)
-  - que l’utilisateur du runner peut utiliser Docker (`groups`)
-  - que le Dockerfile est valide
+## Notes
 
----
-
-## 🔗 Étape suivante
-Passer à **03 — Push de l’image vers GHCR**.
-
+- Cette étape ne pousse rien vers un registre.

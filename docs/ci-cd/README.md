@@ -1,4 +1,4 @@
-# CI/CD — Pipeline complet pour mon-app
+# CI/CD — Pipeline complet
 
 Ce dossier documente l’ensemble du pipeline CI/CD utilisé pour :
 - construire l’image Docker de l’application
@@ -10,56 +10,77 @@ Chaque étape est indépendante, testée et validée avant d’être intégrée 
 
 ---
 
-## ✔️ État actuel du pipeline
+## État actuel du pipeline
 
 Le pipeline CI/CD est opérationnel et validé :
 
-- Checkout : OK  
-- Build Docker : OK  
-- Push GHCR : OK  
-- Déploiement k0s : OK  
+- Checkout : OK
+- Build Docker : OK
+- Push GHCR : OK
+- Déploiement k0s : OK
 
-Le runner self‑hosted exécute l’ensemble du workflow sans erreur.  
-Un warning Node.js 20 apparaît dans GitHub Actions, mais il n’a **aucun impact** sur le fonctionnement.
+Le runner self‑hosted exécute l’ensemble du workflow sans erreur.
 
 ---
 
-## 📚 Structure de la documentation
+## Structure de la documentation
 
 ```
 docs/
 └── ci-cd/
+    ├── 00-intro.md
     ├── 01-checkout.md
     ├── 02-build.md
     ├── 03-push-ghcr.md
     ├── 04-deploy-k0s.md
-    └── README.md   ← ce fichier
+    ├── glossaire.md
+    └── README.md
 ```
 
 ---
 
-## 🧱 Architecture du pipeline
+## Architecture du pipeline
 
 Le pipeline CI/CD complet suit les étapes suivantes :
 
-1. **Checkout du code**  
-   Le runner récupère le dépôt GitHub.
+1. Checkout du code  
+2. Build Docker  
+3. Push GHCR  
+4. Déploiement k0s  
 
-2. **Build Docker (local)**  
-   Le runner construit l’image Docker localement.
+### Schéma simplifié du pipeline
 
-3. **Push GHCR**  
-   L’image est poussée vers :  
-   `ghcr.io/domiq44/mon-app:latest`
-
-4. **Déploiement k0s**  
-   Les manifests du dossier `k8s/` sont appliqués sur le cluster.
+```
++-------------------+
+|    GitHub Repo    |
++-------------------+
+          |
+          v
++-------------------+
+| Runner self-hosted|
++-------------------+
+   |      |      |
+   |      |      |
+   v      v      v
+Checkout  Build  Push GHCR
+                 |
+                 v
+          +----------------+
+          |      GHCR      |
+          +----------------+
+                 |
+                 v
+          +----------------+
+          |   Cluster k0s  |
+          +----------------+
+                 |
+                 v
+            Application
+```
 
 ---
 
-## 🧩 Workflow complet
-
-Voici le workflow final combinant toutes les étapes :
+## Workflow complet
 
 ```yaml
 name: CI/CD
@@ -80,7 +101,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: domiq44
+          username: <votre-utilisateur-github>
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
@@ -88,7 +109,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/domiq44/mon-app:latest
+          tags: ghcr.io/<votre-utilisateur-github>/<nom-de-l-image>:latest
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
@@ -107,61 +128,32 @@ jobs:
 
 ---
 
-## 🔐 Secrets nécessaires
+## Secrets nécessaires
 
-### 1. `GITHUB_TOKEN`
-Doit avoir les permissions suivantes :
-- Read & Write permissions  
-- Allow GitHub Actions to publish packages  
-
-### 2. `KUBECONFIG`
-Contenu complet du kubeconfig permettant d’accéder au cluster k0s.
+- GITHUB_TOKEN  
+- KUBECONFIG  
 
 ---
 
-## 🧪 Comment tester le pipeline
+## Comment tester
 
-1. Faire un commit vide :
-   ```
-   git commit --allow-empty -m "test ci-cd"
-   git push
-   ```
-
-2. Aller dans GitHub → Actions  
-3. Ouvrir le run  
-4. Vérifier que chaque étape passe au vert
+```
+git commit --allow-empty -m "test ci-cd"
+git push
+```
 
 ---
 
-## 🩺 Troubleshooting
+## Troubleshooting
 
-### ❌ Erreur : `permission denied` lors du push GHCR
-- Vérifier les permissions du GITHUB_TOKEN  
-- Vérifier que le package existe dans GHCR  
-
-### ❌ Erreur : `Cannot connect to the Docker daemon`
-- Vérifier que Docker tourne sur le runner  
-- Vérifier que l’utilisateur du runner appartient au groupe `docker`  
-
-### ❌ Erreur kubectl : `certificate signed by unknown authority`
-- Vérifier que le kubeconfig contient bien les certificats CA  
-
-### ❌ Erreur kubectl : `connection refused`
-- Vérifier que le runner peut joindre l’API k0s (port 6443)  
-
-### ⚠️ Warning : Node.js 20 actions are deprecated
-GitHub Actions affiche un avertissement concernant la future migration vers Node.js 24.  
-Ce warning n’a **aucun impact** sur le pipeline actuel. Les actions seront mises à jour automatiquement lorsqu’elles publieront des versions compatibles Node.js 24.
+- permission denied lors du push GHCR  
+- Cannot connect to the Docker daemon  
+- certificate signed by unknown authority  
+- connection refused  
 
 ---
 
-## 🏁 Conclusion
+## Conclusion
 
-Ce pipeline CI/CD :
-- est entièrement automatisé  
-- utilise un runner self‑hosted  
-- construit et publie une image Docker  
-- déploie automatiquement sur un cluster k0s  
-- est documenté étape par étape pour faciliter la maintenance  
+Pipeline automatisé, utilisant un runner self‑hosted, construisant et publiant une image Docker, puis déployant sur un cluster k0s.
 
-Chaque fichier du dossier `ci-cd` détaille une étape précise du pipeline.

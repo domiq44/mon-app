@@ -1,29 +1,24 @@
-# 01 — Checkout du code (Étape validée)
+# 01 — Checkout du code
 
-## 🎯 Objectif
-Valider que le runner self‑hosted **feynman** est capable de :
-- recevoir un job GitHub Actions
-- cloner le dépôt `mon-app`
-- préparer le workspace pour les étapes suivantes
-
-Cette étape est la base de tout le pipeline CI/CD.
+## Objectif
+Récupérer automatiquement le code du dépôt GitHub sur un runner self‑hosted.
 
 ---
 
-## 🧱 Pré‑requis
-- Un runner self‑hosted en ligne dans : Settings → Actions → Runners
-- Le workflow configuré avec :
-  ```
-  runs-on: self-hosted
-  ```
-- Aucun secret requis pour cette étape
+## Rappel : qu’est-ce qu’un runner self-hosted ?
+
+Un runner self-hosted est une machine (PC, VM, serveur) que vous contrôlez et sur laquelle GitHub Actions exécute les workflows.
 
 ---
 
-## 🧩 Workflow minimal pour cette étape
+## Pré‑requis
 
-Ce workflow ne fait que le checkout.  
-Il permet de valider que le runner fonctionne correctement.
+- Un runner self‑hosted installé et en ligne.
+- Le workflow doit utiliser : runs-on: self-hosted
+
+---
+
+## Workflow minimal
 
 ```yaml
 name: CI/CD - Step 01 Checkout
@@ -43,55 +38,45 @@ jobs:
 
 ---
 
-## 🔍 Comment tester
+## Comment tester
 
 1. Faire un commit vide :
-   ```
-   git commit --allow-empty -m "test checkout"
-   git push
-   ```
 
-2. Aller dans **Actions**, sélectionner le workflow, ouvrir le run.
+```
+git commit --allow-empty -m "test checkout"
+git push
+```
 
-3. Vérifier que le job s’exécute sur :
-   ```
-   Runner: feynman (self-hosted)
-   ```
+2. Aller dans Actions.
+3. Vérifier que le job s’exécute sur le runner self-hosted.
 
 ---
 
-## ✅ Comment valider que l’étape fonctionne
+## Validation
 
-Dans les logs de l’étape **Checkout repository**, tu dois voir :
-- `Cloning into '/home/.../_work/mon-app/mon-app'...`
-- `Checked out commit XXXXXXX`
-- Aucun message d’erreur Git (exit code 128, permissions, etc.)
+Dans les logs :
 
-Sur la machine du runner, tu peux vérifier que le dépôt a bien été cloné :
+- Cloning into '/.../_work/...'
+- Checked out commit XXXXXXX
+
+Sur la machine du runner :
 
 ```
-ls ~/github-runner/_work/mon-app/mon-app
-```
-
-Tu dois voir :
-```
-app.py
-Dockerfile
-k8s/
-.github/
-...
+ls <chemin-du-runner>/_work/<nom-du-repo>/<nom-du-repo>
 ```
 
 ---
 
-## 📝 Notes importantes
-- Le runner ne doit jamais être installé dans le dépôt Git lui‑même.
-- Le dossier `_work` est automatiquement géré par GitHub Actions.
-- Cette étape doit être validée avant de passer au build Docker.
+## Erreurs fréquentes
+
+- Runner offline
+- Workflow exécuté sur ubuntu-latest au lieu de self-hosted
+- Permission denied si le runner est installé dans un dossier Git
 
 ---
 
-## 🔗 Étape suivante
-Passer à **02 — Build de l’image Docker (sans push)**.
+## Notes
 
+- Le dossier _work est créé automatiquement.
+- Le runner ne doit jamais être installé dans un dépôt Git.
 
