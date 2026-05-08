@@ -42,3 +42,8 @@ jobs:
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig
 
+      - name: Health check - wait for rollout
+        run: kubectl rollout status deployment/mon-app --timeout=60s
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+
