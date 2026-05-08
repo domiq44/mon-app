@@ -10,6 +10,20 @@ Chaque étape est indépendante, testée et validée avant d’être intégrée 
 
 ---
 
+## ✔️ État actuel du pipeline
+
+Le pipeline CI/CD est opérationnel et validé :
+
+- Checkout : OK  
+- Build Docker : OK  
+- Push GHCR : OK  
+- Déploiement k0s : OK  
+
+Le runner self‑hosted exécute l’ensemble du workflow sans erreur.  
+Un warning Node.js 20 apparaît dans GitHub Actions, mais il n’a **aucun impact** sur le fonctionnement.
+
+---
+
 ## 📚 Structure de la documentation
 
 ```
@@ -67,7 +81,7 @@ jobs:
         with:
           registry: ghcr.io
           username: domiq44
-          password: \${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
         uses: docker/build-push-action@v5
@@ -81,26 +95,26 @@ jobs:
 
       - name: Write kubeconfig
         run: |
-          echo "\${KUBECONFIG_CONTENT}" > kubeconfig
+          echo "${KUBECONFIG_CONTENT}" > kubeconfig
         env:
-          KUBECONFIG_CONTENT: \${{ secrets.KUBECONFIG }}
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
 
       - name: Deploy to k0s
         run: kubectl apply --validate=false -f k8s/
         env:
-          KUBECONFIG: \${{ github.workspace }}/kubeconfig
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
 ```
 
 ---
 
 ## 🔐 Secrets nécessaires
 
-### 1. \`GITHUB_TOKEN\`
+### 1. `GITHUB_TOKEN`
 Doit avoir les permissions suivantes :
-- Read & Write permissions
-- Allow GitHub Actions to publish packages
+- Read & Write permissions  
+- Allow GitHub Actions to publish packages  
 
-### 2. \`KUBECONFIG\`
+### 2. `KUBECONFIG`
 Contenu complet du kubeconfig permettant d’accéder au cluster k0s.
 
 ---
@@ -121,31 +135,33 @@ Contenu complet du kubeconfig permettant d’accéder au cluster k0s.
 
 ## 🩺 Troubleshooting
 
-### ❌ Erreur : \`permission denied\` lors du push GHCR
-- Vérifier les permissions du GITHUB_TOKEN
-- Vérifier que le package existe dans GHCR
+### ❌ Erreur : `permission denied` lors du push GHCR
+- Vérifier les permissions du GITHUB_TOKEN  
+- Vérifier que le package existe dans GHCR  
 
-### ❌ Erreur : \`Cannot connect to the Docker daemon\`
-- Vérifier que Docker tourne sur le runner
-- Vérifier que l’utilisateur du runner appartient au groupe \`docker\`
+### ❌ Erreur : `Cannot connect to the Docker daemon`
+- Vérifier que Docker tourne sur le runner  
+- Vérifier que l’utilisateur du runner appartient au groupe `docker`  
 
-### ❌ Erreur kubectl : \`certificate signed by unknown authority\`
-- Vérifier que le kubeconfig contient bien les certificats CA
+### ❌ Erreur kubectl : `certificate signed by unknown authority`
+- Vérifier que le kubeconfig contient bien les certificats CA  
 
-### ❌ Erreur kubectl : \`connection refused\`
-- Vérifier que le runner peut joindre l’API k0s (port 6443)
+### ❌ Erreur kubectl : `connection refused`
+- Vérifier que le runner peut joindre l’API k0s (port 6443)  
+
+### ⚠️ Warning : Node.js 20 actions are deprecated
+GitHub Actions affiche un avertissement concernant la future migration vers Node.js 24.  
+Ce warning n’a **aucun impact** sur le pipeline actuel. Les actions seront mises à jour automatiquement lorsqu’elles publieront des versions compatibles Node.js 24.
 
 ---
 
 ## 🏁 Conclusion
 
 Ce pipeline CI/CD :
-- est entièrement automatisé
-- utilise un runner self‑hosted
-- construit et publie une image Docker
-- déploie automatiquement sur un cluster k0s
-- est documenté étape par étape pour faciliter la maintenance
+- est entièrement automatisé  
+- utilise un runner self‑hosted  
+- construit et publie une image Docker  
+- déploie automatiquement sur un cluster k0s  
+- est documenté étape par étape pour faciliter la maintenance  
 
-Chaque fichier du dossier \`ci-cd\` détaille une étape précise du pipeline.
-
-
+Chaque fichier du dossier `ci-cd` détaille une étape précise du pipeline.
