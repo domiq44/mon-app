@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: mon-app
-          image: ghcr.io/TON_USER/mon-app:latest
+          image: ghcr.io/domiq44/mon-app:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
